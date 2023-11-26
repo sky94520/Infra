@@ -1,3 +1,3 @@
 FROM kodcloud/kodbox:v1.4505
-ADD define.php config
-ADD setting_user.php config
+COPY kodbox/define.php config/define.php
+COPY kodbox/setting_user.php config/setting_user.php

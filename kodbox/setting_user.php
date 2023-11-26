@@ -1,0 +1,1 @@
+$config['settings']['staticPath'] = "https://static.kodcloud.com/kod/static/last/";

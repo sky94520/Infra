@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudreve
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudreve
+  template:
+    metadata:
+      labels:
+        app: cloudreve
+    spec:
+      containers:
+        - name: cloudreve
+          image: cloudreve/cloudreve:3.8.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5212
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudreve-svc
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+    - port: 5212
+      targetPort: 5212
+      protocol: TCP
+      name: http
+  selector:
+    app: cloudreve

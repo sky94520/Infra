@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kodbox-config
+  namespace: default
+data:
+  define.php: |
+    define('HOST', 'https://sky94520-kodbox.cpolar.top/');
+  setting_user.php: |
+    $config['settings']['staticPath'] = "https://static.kodcloud.com/kod/static/last/";
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kodbox
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kodbox
+  template:
+    metadata:
+      labels:
+        app: kodbox
+    spec:
+      containers:
+        - name: kodbox
+          image: kodcloud/kodbox:v1.4505
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config
+              mountPath: /var/www/html/config/define.php
+              subPath: /var/www/html/config/define.php
+            - name: config
+              mountPath: /var/www/html/config/setting_user.php
+              subPath: /var/www/html/config/setting_user.php
+      volumes:
+        - name: config
+          configMap:
+            name: kodbox-config
+            items:
+              - key: define.php
+                path: var/www/html/config/define.php
+              - key: setting_user.php
+                path: var/www/html/config/setting_user.php
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kodbox-svc
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: kodbox
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kodbox-ingress
+spec:
+  tls:
+    - hosts:
+        - kodbox.sky.com
+      secretName: kodbox-secret
+  rules:
+    - host: kodbox.sky.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kodbox-svc
+                port:
+                  number: 80

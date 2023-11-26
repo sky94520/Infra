@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: elasticsearch-ingress
+  namespace: elastic-system
+spec:
+  tls:
+    - hosts:
+        - elasticsearch.sky.com
+      secretName: elasticsearch-secret
+  rules:
+    - host: elasticsearch.sky.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: es-es-http
+                port:
+                  number: 9200
+    - host: kibana.sky.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kibana-kb-http
+                port:
+                  number: 5601

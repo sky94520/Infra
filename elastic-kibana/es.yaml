@@ -1,0 +1,26 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: es
+spec:
+  version: 8.11.1
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  nodeSets:
+  - name: default
+    count: 1
+    config:
+      node.store.allow_mmap: false
+      node.roles: ["master", "data", "ingest", "ml", "transform"]
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data # 这里不要修改，进阶用法参考 ECK 官方文档
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi # 配置默认大小，allowVolumeExpansion为true后续可以扩展
+        storageClassName: nfs # StorageClass 名称

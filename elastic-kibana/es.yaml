@@ -2,6 +2,7 @@ apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
   name: es
+  namespace: elastic-system
 spec:
   version: 8.11.1
   http:
@@ -14,6 +15,24 @@ spec:
     config:
       node.store.allow_mmap: false
       node.roles: ["master", "data", "ingest", "ml", "transform"]
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          command:
+          - /usr/bin/env
+          - bash
+          - -c
+          - |
+            #!/usr/bin/env bash
+            set -e
+            cd plugins
+            # -L 表示重定向 -O表示输出到文件
+            curl -LO https://gitee.com/sky94520/elasticsearch-analysis-ik/releases/download/v8.11.1/elasticsearch-analysis-ik-8.11.1.zip
+            unzip elasticsearch-analysis-ik-8.11.1.zip -d analysis-ik
+            rm elasticsearch-analysis-ik-8.11.1.zip
+            cd -
+            /bin/tini -- /usr/local/bin/docker-entrypoint.sh
     volumeClaimTemplates:
     - metadata:
         name: elasticsearch-data # 这里不要修改，进阶用法参考 ECK 官方文档
